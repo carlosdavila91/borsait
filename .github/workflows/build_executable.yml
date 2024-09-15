@@ -39,7 +39,7 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          poetry run pyinstaller --onefile --name BorsaScraper borsait/main.py
+          poetry run pyinstaller --onefile --name BorsaScraper.exe borsait/main.py
 
       - name: Create batch file
         run: |
