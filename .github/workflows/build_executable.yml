@@ -1,0 +1,80 @@
+name: Build Windows Executable and Create Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create false
+          
+      - name: Add PyInstaller
+        run: |
+          poetry add pyinstaller
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Build executable with PyInstaller
+        run: |
+          poetry run pyinstaller --onefile --name BorsaScraper borsait/main.py
+
+      - name: Create batch file
+        run: |
+          echo @echo off > run_scraper.bat
+          echo set /p pages="Enter the number of pages to scrape (default: 100): " >> run_scraper.bat
+          echo set /p output="Enter the output directory (default: data): " >> run_scraper.bat
+          echo if "%%pages%%"=="" set pages=100 >> run_scraper.bat
+          echo if "%%output%%"=="" set output=data >> run_scraper.bat
+          echo BorsaScraper.exe --pages %%pages%% --output "%%output%%" >> run_scraper.bat
+          echo pause >> run_scraper.bat
+
+      - name: Zip output files
+        run: |
+          Compress-Archive -Path dist/BorsaScraper.exe, run_scraper.bat -DestinationPath BorsaScraper.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./BorsaScraper.zip
+          asset_name: BorsaScraper.zip
+          asset_content_type: application/zip
+        if: startsWith(github.ref, 'refs/tags/')
