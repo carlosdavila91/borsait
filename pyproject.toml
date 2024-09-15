@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "borsait"
+version = "0.1.0"
+description = "A simple scraper for the obligations published in the borsa italiana web page."
+authors = ["Carlos Davila <carlos.davila.luelmo@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "<3.14,>3.12"
+openpyxl = "^3.1.5"
+playwright = "^1.46.0"
+rich = "^13.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
