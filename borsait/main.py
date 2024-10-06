@@ -5,7 +5,6 @@ Python program to scrape obligation data from the borsaitaliana.it page.
 import argparse
 import asyncio
 import datetime
-import logging
 import time
 from pathlib import Path
 
@@ -14,10 +13,8 @@ from playwright.async_api import async_playwright
 from rich.console import Console
 from rich.progress import Progress
 
-from constants import BASE_URL, RELATIVE_PATH
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+BASE_URL = "https://www.borsaitaliana.it/"
+RELATIVE_PATH = "borsa/obbligazioni/ricerca-avanzata.html#formAndResults"
 
 
 async def get_page_data(page_number: int) -> list[list[str]]:
@@ -34,7 +31,6 @@ async def get_page_data(page_number: int) -> list[list[str]]:
 
         # Extract the table data
         table = await page.query_selector_all("table")
-        logger.info("Table detected")
         table_element = table[0]
         column_names = [
             await cell.inner_text()
