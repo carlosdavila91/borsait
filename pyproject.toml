@@ -1,13 +1,15 @@
 [tool.poetry]
 name = "borsait"
-version = "0.1.0"
+version = "0.2.0"
 description = "A simple scraper for the obligations published in the borsa italiana web page."
 authors = ["Carlos Davila <carlos.davila.luelmo@gmail.com>"]
 readme = "README.md"
-package-mode = false
+
+[tool.poetry.scripts]
+borsait = 'borsait:main'
 
 [tool.poetry.dependencies]
-python = "<3.14,>3.12"
+python = "<3.14,>3.9"
 openpyxl = "^3.1.5"
 playwright = "^1.46.0"
 rich = "^13.8.0"

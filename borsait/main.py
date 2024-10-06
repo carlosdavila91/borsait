@@ -14,7 +14,7 @@ from playwright.async_api import async_playwright
 from rich.console import Console
 from rich.progress import Progress
 
-from .constants import BASE_URL, RELATIVE_PATH
+from constants import BASE_URL, RELATIVE_PATH
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
