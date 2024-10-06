@@ -7,7 +7,7 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "<3.14,>3.12"
+python = "<3.14,>3.9"
 openpyxl = "^3.1.5"
 playwright = "^1.46.0"
 rich = "^13.8.0"
