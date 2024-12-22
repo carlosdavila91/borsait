@@ -47,7 +47,23 @@ async def get_page_data(page_number: int) -> list[list[str]]:
         return [column_names] + data
 
 
-async def scrape_pages(page_range: range, output_dir: Path) -> None:
+async def save_data(all_data: list[list[str]], output_path: Path) -> None:
+    """Saves the scraped data to an excel workbook."""
+    # Flatten the list of data and write to an Excel file
+    data = [row for page_data in all_data for row in page_data]
+
+    # Prepare the excel file
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    column_names = data[0]
+    sheet.append(column_names)  # type: ignore
+    for row in data[1:]:
+        if row != column_names and row != []:
+            sheet.append(row)  # type: ignore
+    workbook.save(output_path)
+
+
+async def run_scrape(page_range: range, output_dir: Path) -> None:
     """
     Runs the whole process: scrapes all the data and adds it to the output file.
     """
@@ -65,18 +81,7 @@ async def scrape_pages(page_range: range, output_dir: Path) -> None:
             all_data.append(data)
             progress.update(task, advance=1)
 
-    # Flatten the list of data and write to an Excel file
-    data = [row for page_data in all_data for row in page_data]
-
-    # Prepare the excel file
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    column_names = data[0]
-    sheet.append(column_names)  # type: ignore
-    for row in data[1:]:
-        if row != column_names and row != []:
-            sheet.append(row)  # type: ignore
-    workbook.save(output_path)
+    await save_data(all_data=all_data, output_path=output_path)
 
     console.print(f"[bold green]Scraping completed. Data saved to {output_path}")
 
@@ -107,7 +112,7 @@ async def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
-    await scrape_pages(range(1, n_pages + 1), output_dir)
+    await run_scrape(range(1, n_pages + 1), output_dir)
     print(f"Scraping completed in {time.time() - start_time:.2f} seconds.")
 
 
