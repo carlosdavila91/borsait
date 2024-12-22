@@ -15,6 +15,7 @@ from rich.progress import Progress
 
 BASE_URL = "https://www.borsaitaliana.it/"
 RELATIVE_PATH = "borsa/obbligazioni/ricerca-avanzata.html#formAndResults"
+SCRAPE_URL = f"{BASE_URL}{RELATIVE_PATH}"
 
 
 async def get_page_data(page_number: int) -> list[list[str]]:
@@ -23,7 +24,7 @@ async def get_page_data(page_number: int) -> list[list[str]]:
         browser = await p.chromium.launch()
         page = await browser.new_page()
 
-        url = f"{BASE_URL}{RELATIVE_PATH}?page={page_number}"
+        url = f"{SCRAPE_URL}?page={page_number}"
         await page.goto(url)
 
         # Wait for the table to be rendered
