@@ -5,6 +5,7 @@ Python program to scrape obligation data from the borsaitaliana.it page.
 import argparse
 import asyncio
 import datetime
+import sys
 import time
 from pathlib import Path
 
@@ -86,35 +87,51 @@ async def run_scrape(page_range: range, output_dir: Path) -> None:
     console.print(f"[bold green]Scraping completed. Data saved to {output_path}")
 
 
-async def main():
+async def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Scrape data from a paginated table on a website."
+        description=f"Estrae dati da la tabella paginata sul sito web {SCRAPE_URL}.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--pages",
         default=100,
         type=int,
-        required=True,
-        help="The number of pages to scrape",
+        required=False,
+        help="Il numero di pagine da estrarre",
     )
     parser.add_argument(
         "--output",
-        default=Path("./data"),
         type=str,
         required=True,
-        help="The directory to save the output file",
+        help="La directory dove salvare il file di output",
     )
+    return parser
+
+
+async def async_main():
+    parser = await get_parser()
+
+    # If no arguments are provided, print help and exit
+    if len(sys.argv) == 1:
+        parser.print_help()
+        return
+
     args = parser.parse_args()
-    n_pages = args.pages
+    pages = args.pages
     output_dir = Path(args.output)
 
     # Ensure the output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
-    await run_scrape(range(1, n_pages + 1), output_dir)
+    await run_scrape(range(1, pages + 1), output_dir)
     print(f"Scraping completed in {time.time() - start_time:.2f} seconds.")
 
 
+def main():
+    """Synchronous wrapper to the main function."""
+    asyncio.run(async_main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
