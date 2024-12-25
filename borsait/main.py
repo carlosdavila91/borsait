@@ -28,7 +28,7 @@ async def get_page_data(
         async with async_playwright() as p:
             if verbose:
                 console.print(f"[yellow]Launching browser (headless={headless})")
-            browser = await p.chromium.launch(headless=headless)
+            browser = await p.firefox.launch(headless=headless)
             page = await browser.new_page()
 
             url = f"{SCRAPE_URL}?page={page_number}"
