@@ -19,10 +19,10 @@ RELATIVE_PATH = "borsa/obbligazioni/ricerca-avanzata.html#formAndResults"
 SCRAPE_URL = f"{BASE_URL}{RELATIVE_PATH}"
 
 
-async def get_page_data(page_number: int) -> list[list[str]]:
+async def get_page_data(page_number: int, headless: bool) -> list[list[str]]:
     """Loads the page and extracts the table data."""
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.chromium.launch(headless=headless)
         page = await browser.new_page()
 
         url = f"{SCRAPE_URL}?page={page_number}"
@@ -64,7 +64,7 @@ async def save_data(all_data: list[list[str]], output_path: Path) -> None:
     workbook.save(output_path)
 
 
-async def run_scrape(page_range: range, output_dir: Path) -> None:
+async def run_scrape(page_range: range, output_dir: Path, headless: bool) -> None:
     """
     Runs the whole process: scrapes all the data and adds it to the output file.
     """
@@ -78,7 +78,7 @@ async def run_scrape(page_range: range, output_dir: Path) -> None:
 
         all_data = []
         for page_number in page_range:
-            data = await get_page_data(page_number)
+            data = await get_page_data(page_number, headless=headless)
             all_data.append(data)
             progress.update(task, advance=1)
 
@@ -94,6 +94,7 @@ async def get_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--pages",
+        "-p",
         default=100,
         type=int,
         required=False,
@@ -101,9 +102,16 @@ async def get_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--output",
+        "-d",
         type=str,
         required=True,
         help="La directory dove salvare il file di output",
+    )
+    parser.add_argument(
+        "--watching",
+        action="store_true",
+        default=False,
+        help="Se eseguire il browser in modalità senza intestazione.",
     )
     return parser
 
@@ -119,12 +127,13 @@ async def async_main():
     args = parser.parse_args()
     pages = args.pages
     output_dir = Path(args.output)
+    headless = not args.watching
 
     # Ensure the output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
-    await run_scrape(range(1, pages + 1), output_dir)
+    await run_scrape(range(1, pages + 1), output_dir, headless)
     print(f"Scraping completed in {time.time() - start_time:.2f} seconds.")
 
 
